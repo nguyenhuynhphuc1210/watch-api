@@ -7,10 +7,13 @@ import com.example.watch.entity.CartItem;
 
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 
-    List<CartItem> findByUser_Id(Long userId);
+    Optional<CartItem> findByUserIdAndProductId(Long userId, Long productId);
 
-    Optional<CartItem> findByUser_IdAndProduct_Id(Long userId, Long productId);
+    List<CartItem> findByUserId(Long userId);
 
-    void deleteByUser_Id(Long userId);
+    void deleteByUserId(Long userId);
+
+    void deleteByUserIdAndProductId(Long userId, Long productId);
 }
+
 

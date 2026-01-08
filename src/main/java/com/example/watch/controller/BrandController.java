@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -20,8 +21,7 @@ public class BrandController {
     // ================= CREATE =================
     @PostMapping
     public ResponseEntity<BrandResponseDTO> create(
-            @RequestBody BrandRequestDTO dto
-    ) {
+            @RequestBody BrandRequestDTO dto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(brandService.create(dto));
@@ -36,8 +36,7 @@ public class BrandController {
     // ================= GET BY ID =================
     @GetMapping("/{id}")
     public ResponseEntity<BrandResponseDTO> getById(
-            @PathVariable Long id
-    ) {
+            @PathVariable Long id) {
         return ResponseEntity.ok(brandService.getById(id));
     }
 
@@ -45,17 +44,22 @@ public class BrandController {
     @PutMapping("/{id}")
     public ResponseEntity<BrandResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody BrandRequestDTO dto
-    ) {
+            @RequestBody BrandRequestDTO dto) {
         return ResponseEntity.ok(brandService.update(id, dto));
     }
 
     // ================= DELETE =================
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id
-    ) {
+            @PathVariable Long id) {
         brandService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/logo")
+    public BrandResponseDTO uploadLogo(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        return brandService.uploadLogo(id, file);
     }
 }

@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-public class ProductResponseDTO {
+public class ProductResponseDTO  {
 
     private Long id;
     private String name;

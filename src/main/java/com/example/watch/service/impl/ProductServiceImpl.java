@@ -45,15 +45,18 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getAll() {
-        return productRepository.findAll()
+
+        return productRepository.findAllWithRelations()
                 .stream()
                 .map(ProductMapper::toDTO)
                 .toList();
     }
 
+    // ================= FILTER =================
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getByCategory(Long categoryId) {
+
         return productRepository.findByCategoryId(categoryId)
                 .stream()
                 .map(ProductMapper::toDTO)
@@ -63,6 +66,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getByBrand(Long brandId) {
+
         return productRepository.findByBrandId(brandId)
                 .stream()
                 .map(ProductMapper::toDTO)
@@ -72,13 +76,19 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> getByCategoryAndBrand(Long categoryId, Long brandId) {
-        return productRepository.findByCategoryIdAndBrandId(categoryId, brandId)
+
+        return productRepository
+                .findByCategoryIdAndBrandId(categoryId, brandId)
                 .stream()
                 .map(ProductMapper::toDTO)
                 .toList();
     }
 
+    // ================= SEARCH =================
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> search(String keyword) {
+
         return productRepository
                 .findByNameContainingIgnoreCase(keyword)
                 .stream()
@@ -86,7 +96,10 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> searchByCategory(Long categoryId, String keyword) {
+
         return productRepository
                 .findByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword)
                 .stream()
@@ -94,7 +107,10 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
     public List<ProductResponseDTO> searchByBrand(Long brandId, String keyword) {
+
         return productRepository
                 .findByBrandIdAndNameContainingIgnoreCase(brandId, keyword)
                 .stream()
@@ -102,7 +118,14 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
-    public List<ProductResponseDTO> search(Long categoryId, Long brandId, String keyword) {
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> search(
+            Long categoryId,
+            Long brandId,
+            String keyword
+    ) {
+
         return productRepository
                 .findByCategoryIdAndBrandIdAndNameContainingIgnoreCase(
                         categoryId, brandId, keyword)
@@ -116,7 +139,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public ProductResponseDTO getById(Long id) {
 
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findDetailById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         return ProductMapper.toDTO(product);
@@ -126,7 +149,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO update(Long id, ProductRequestDTO dto) {
 
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findDetailById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         Brand brand = brandRepository.findById(dto.getBrandId())

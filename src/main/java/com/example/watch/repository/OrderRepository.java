@@ -28,7 +28,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // ================= SORTING =================
 
     // Lịch sử mua hàng (mới nhất trước)
-    List<Order> findByUser_IdOrderByCreatedAtDesc(Long userId);
+    List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     // Admin xem order theo trạng thái (mới nhất trước)
     List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);

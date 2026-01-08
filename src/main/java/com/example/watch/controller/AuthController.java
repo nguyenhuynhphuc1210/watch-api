@@ -3,6 +3,8 @@ package com.example.watch.controller;
 import com.example.watch.dto.request.*;
 import com.example.watch.dto.response.AuthResponseDTO;
 import com.example.watch.service.AuthService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,4 +26,23 @@ public class AuthController {
     public AuthResponseDTO login(@RequestBody LoginRequestDTO dto) {
         return authService.login(dto);
     }
+
+    @PostMapping("/forgot-password")
+    public String forgotPassword(@RequestBody ForgotPasswordRequestDTO dto) {
+        authService.forgotPassword(dto);
+        return "OTP đã được gửi về email";
+    }
+
+    @PostMapping("/verify-otp")
+    public String verifyOtp(@RequestBody VerifyOtpRequestDTO dto) {
+        authService.verifyOtp(dto);
+        return "OTP hợp lệ";
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDTO dto) {
+        authService.resetPassword(dto);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+
 }

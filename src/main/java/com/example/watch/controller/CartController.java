@@ -3,8 +3,8 @@ package com.example.watch.controller;
 import com.example.watch.dto.response.CartItemResponseDTO;
 import com.example.watch.service.CartService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.watch.dto.request.CartItemRequestDTO;
 
 import java.util.List;
 
@@ -15,41 +15,30 @@ public class CartController {
 
     private final CartService cartService;
 
-    // ================= ADD TO CART =================
     @PostMapping("/add")
-    public ResponseEntity<Void> addToCart(
+    public void addToCart(
             @RequestParam Long userId,
-            @RequestParam Long productId,
-            @RequestParam(defaultValue = "1") int quantity
+            @RequestBody CartItemRequestDTO dto
     ) {
-        cartService.addToCart(userId, productId, quantity);
-        return ResponseEntity.ok().build();
+        cartService.addToCart(userId, dto);
     }
 
-    // ================= GET CART =================
     @GetMapping
-    public ResponseEntity<List<CartItemResponseDTO>> getCart(
-            @RequestParam Long userId
-    ) {
-        return ResponseEntity.ok(cartService.getCart(userId));
+    public List<CartItemResponseDTO> getCart(@RequestParam Long userId) {
+        return cartService.getCart(userId);
     }
 
-    // ================= REMOVE PRODUCT =================
     @DeleteMapping("/remove")
-    public ResponseEntity<Void> removeFromCart(
+    public void remove(
             @RequestParam Long userId,
             @RequestParam Long productId
     ) {
         cartService.removeFromCart(userId, productId);
-        return ResponseEntity.ok().build();
     }
 
-    // ================= CLEAR CART =================
     @DeleteMapping("/clear")
-    public ResponseEntity<Void> clearCart(
-            @RequestParam Long userId
-    ) {
+    public void clear(@RequestParam Long userId) {
         cartService.clearCart(userId);
-        return ResponseEntity.ok().build();
     }
 }
+

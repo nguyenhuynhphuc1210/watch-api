@@ -26,98 +26,105 @@ import java.util.List;
 @Transactional
 public class OrderServiceImpl implements OrderService {
 
-        private final OrderRepository orderRepository;
-        private final OrderDetailRepository orderDetailRepository;
-        private final CartItemRepository cartItemRepository;
-        private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
 
-        // ================= CREATE ORDER (CHECKOUT) =================
-        @Override
-        public OrderResponseDTO createOrder(Long userId, OrderRequestDTO dto) {
+    // ================= CREATE ORDER (CHECKOUT) =================
+    @Override
+    public OrderResponseDTO createOrder(Long userId, OrderRequestDTO dto) {
 
-                User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-                List<CartItem> cartItems = cartItemRepository.findByUser_Id(userId);
-                if (cartItems.isEmpty()) {
-                        throw new RuntimeException("Cart is empty");
-                }
-
-                // 1️⃣ Create & save Order (KHÔNG reassign biến dùng trong lambda)
-                Order orderEntity = OrderMapper.toEntity(dto, user);
-                Order savedOrder = orderRepository.save(orderEntity); // 👉 biến mới
-
-                // 2️⃣ Create OrderDetails
-                List<OrderDetail> orderDetails = cartItems.stream()
-                                .map(item -> OrderDetailMapper.toEntity(
-                                                savedOrder,
-                                                item.getProduct(),
-                                                item.getQuantity()))
-                                .toList();
-
-                orderDetailRepository.saveAll(orderDetails);
-
-                // 3️⃣ Calculate total amount
-                BigDecimal totalAmount = orderDetails.stream()
-                                .map(od -> od.getPrice()
-                                                .multiply(BigDecimal.valueOf(od.getQuantity())))
-                                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                savedOrder.setTotalAmount(totalAmount);
-
-                // 4️⃣ Clear cart
-                cartItemRepository.deleteByUser_Id(userId);
-
-                return OrderMapper.toDTO(savedOrder, orderDetails);
+        // ✅ LẤY CART THEO userId (KHÔNG dùng User_Id)
+        List<CartItem> cartItems = cartItemRepository.findByUserId(userId);
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException("Cart is empty");
         }
 
-        // ================= GET ORDERS BY USER =================
-        @Override
-        @Transactional(readOnly = true)
-        public List<OrderResponseDTO> getOrdersByUser(Long userId) {
+        // 1️⃣ Create Order
+        Order order = OrderMapper.toEntity(dto, user);
+        Order savedOrder = orderRepository.save(order);
 
-                return orderRepository.findByUser_IdOrderByCreatedAtDesc(userId)
-                                .stream()
-                                .map(order -> OrderMapper.toDTO(
-                                                order,
-                                                orderDetailRepository.findByOrder_Id(order.getId())))
-                                .toList();
-        }
+        // 2️⃣ Create OrderDetails từ CartItem
+        List<OrderDetail> orderDetails = cartItems.stream()
+                .map(item -> OrderDetailMapper.toEntity(
+                        savedOrder,
+                        item.getProduct(),
+                        item.getQuantity()
+                ))
+                .toList();
 
-        // ================= GET ORDER BY CODE (USER) =================
-        @Override
-        @Transactional(readOnly = true)
-        public OrderResponseDTO getByOrderCode(String orderCode) {
+        orderDetailRepository.saveAll(orderDetails);
 
-                Order order = orderRepository.findByOrderCode(orderCode)
-                                .orElseThrow(() -> new RuntimeException("Order not found"));
+        // 3️⃣ Calculate total amount
+        BigDecimal totalAmount = orderDetails.stream()
+                .map(od -> od.getPrice()
+                        .multiply(BigDecimal.valueOf(od.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                return OrderMapper.toDTO(
-                                order,
-                                orderDetailRepository.findByOrder_Id(order.getId()));
-        }
+        savedOrder.setTotalAmount(totalAmount);
+        // ❌ không cần save vì @Transactional
 
-        // ================= GET ORDERS BY STATUS (ADMIN) =================
-        @Override
-        @Transactional(readOnly = true)
-        public List<OrderResponseDTO> getOrdersByStatus(OrderStatus status) {
+        // 4️⃣ Clear cart
+        cartItemRepository.deleteByUserId(userId);
 
-                return orderRepository.findByStatusOrderByCreatedAtDesc(status)
-                                .stream()
-                                .map(order -> OrderMapper.toDTO(
-                                                order,
-                                                orderDetailRepository.findByOrder_Id(order.getId())))
-                                .toList();
-        }
+        return OrderMapper.toDTO(savedOrder, orderDetails);
+    }
 
-        // ================= UPDATE ORDER STATUS (ADMIN) =================
-        @Override
-        public void updateStatus(Long orderId, OrderStatus status) {
+    // ================= GET ORDERS BY USER =================
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getOrdersByUser(Long userId) {
 
-                Order order = orderRepository.findById(orderId)
-                                .orElseThrow(() -> new RuntimeException("Order not found"));
+        return orderRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(order -> OrderMapper.toDTO(
+                        order,
+                        orderDetailRepository.findByOrderId(order.getId())
+                ))
+                .toList();
+    }
 
-                order.setStatus(status);
-                // Không cần save() vì đang trong @Transactional
-        }
+    // ================= GET ORDER BY CODE (USER) =================
+    @Override
+    @Transactional(readOnly = true)
+    public OrderResponseDTO getByOrderCode(String orderCode) {
+
+        Order order = orderRepository.findByOrderCode(orderCode)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        return OrderMapper.toDTO(
+                order,
+                orderDetailRepository.findByOrderId(order.getId())
+        );
+    }
+
+    // ================= GET ORDERS BY STATUS (ADMIN) =================
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderResponseDTO> getOrdersByStatus(OrderStatus status) {
+
+        return orderRepository.findByStatusOrderByCreatedAtDesc(status)
+                .stream()
+                .map(order -> OrderMapper.toDTO(
+                        order,
+                        orderDetailRepository.findByOrderId(order.getId())
+                ))
+                .toList();
+    }
+
+    // ================= UPDATE ORDER STATUS (ADMIN) =================
+    @Override
+    public void updateStatus(Long orderId, OrderStatus status) {
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(status);
+        // @Transactional → tự flush
+    }
 }
+
