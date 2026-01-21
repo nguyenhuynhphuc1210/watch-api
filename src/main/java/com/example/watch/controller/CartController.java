@@ -18,8 +18,7 @@ public class CartController {
     @PostMapping("/add")
     public void addToCart(
             @RequestParam Long userId,
-            @RequestBody CartItemRequestDTO dto
-    ) {
+            @RequestBody CartItemRequestDTO dto) {
         cartService.addToCart(userId, dto);
     }
 
@@ -31,8 +30,7 @@ public class CartController {
     @DeleteMapping("/remove")
     public void remove(
             @RequestParam Long userId,
-            @RequestParam Long productId
-    ) {
+            @RequestParam Long productId) {
         cartService.removeFromCart(userId, productId);
     }
 
@@ -40,5 +38,11 @@ public class CartController {
     public void clear(@RequestParam Long userId) {
         cartService.clearCart(userId);
     }
-}
 
+    @PutMapping("/decrease")
+    public void decrease(
+            @RequestParam Long userId,
+            @RequestParam Long productId) {
+        cartService.decreaseQuantity(userId, productId);
+    }
+}

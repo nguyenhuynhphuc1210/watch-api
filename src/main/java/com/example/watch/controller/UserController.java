@@ -36,8 +36,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> update(
             @PathVariable Long id,
-            @RequestBody UserRequestDTO dto
-    ) {
+            @RequestBody UserRequestDTO dto) {
         return ResponseEntity.ok(userService.update(id, dto));
     }
 
@@ -51,5 +50,10 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> me() {
         return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDTO> updateMe(@RequestBody UserRequestDTO dto) {
+        return ResponseEntity.ok(userService.updateCurrentUser(dto));
     }
 }

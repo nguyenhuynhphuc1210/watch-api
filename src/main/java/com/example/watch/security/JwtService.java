@@ -18,7 +18,9 @@ public class JwtService {
     private long expiration;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
+        return Keys.hmacShaKeyFor(
+                secretKey.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
     }
 
     public String generateToken(String email) {
@@ -41,10 +43,23 @@ public class JwtService {
 
     public boolean isTokenValid(String token) {
         try {
-            extractEmail(token);
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            System.out.println("✅ JWT OK: " + claims.getSubject());
             return true;
-        } catch (JwtException e) {
-            return false;
+
+        } catch (ExpiredJwtException e) {
+            System.out.println("❌ JWT EXPIRED");
+        } catch (SignatureException e) {
+            System.out.println("❌ JWT SIGNATURE INVALID");
+        } catch (Exception e) {
+            System.out.println("❌ JWT ERROR: " + e.getMessage());
         }
+        return false;
     }
 }
+

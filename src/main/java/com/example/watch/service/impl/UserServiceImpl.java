@@ -81,4 +81,36 @@ public class UserServiceImpl implements UserService {
 
         return UserMapper.toDTO(user);
     }
+
+    @Override
+    public UserResponseDTO updateCurrentUser(UserRequestDTO dto) {
+
+        // lấy user đang đăng nhập từ SecurityContext
+        User current = getCurrentUserEntity();
+
+        // cập nhật các field được phép
+        current.setFullName(dto.getFullName());
+        current.setPhone(dto.getPhone());
+
+        // nếu password không trống → hash lại
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            current.setPassword(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        // ❌ KHÔNG cập nhật email
+        // current.setEmail(dto.getEmail());
+
+        userRepository.save(current);
+
+        return UserMapper.toDTO(current);
+    }
+
+    private User getCurrentUserEntity() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName(); // email là username đăng nhập
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
 }

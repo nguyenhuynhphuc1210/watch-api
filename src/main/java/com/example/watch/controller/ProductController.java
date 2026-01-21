@@ -4,6 +4,8 @@ import com.example.watch.dto.request.ProductRequestDTO;
 import com.example.watch.dto.response.ProductResponseDTO;
 import com.example.watch.service.ProductService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +30,7 @@ public class ProductController {
     public List<ProductResponseDTO> getAll(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long brandId,
-            @RequestParam(required = false) String keyword
-    ) {
+            @RequestParam(required = false) String keyword) {
 
         // ===== FULL FILTER =====
         if (categoryId != null && brandId != null && keyword != null) {
@@ -82,15 +83,15 @@ public class ProductController {
     @PutMapping("/{id}")
     public ProductResponseDTO update(
             @PathVariable Long id,
-            @RequestBody ProductRequestDTO dto
-    ) {
+            @RequestBody ProductRequestDTO dto) {
         return productService.update(id, dto);
     }
 
     /* ================= DELETE ================= */
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         productService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

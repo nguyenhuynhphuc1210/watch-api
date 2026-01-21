@@ -89,5 +89,18 @@ public class CartServiceImpl implements CartService {
     public void clearCart(Long userId) {
         cartItemRepository.deleteByUserId(userId);
     }
+
+        @Override
+    public void decreaseQuantity(Long userId, Long productId) {
+        CartItem item = cartItemRepository
+                .findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (item.getQuantity() > 1) {
+            item.setQuantity(item.getQuantity() - 1);
+        } else {
+            cartItemRepository.delete(item);
+        }
+    }
 }
 

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import com.example.watch.enums.OrderStatus;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -15,7 +16,7 @@ public class Order extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) 
     private User user;
 
@@ -34,6 +35,14 @@ public class Order extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String note;
+
+    @OneToMany(
+            mappedBy = "order",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<OrderDetail> orderDetails;
 }
 
 

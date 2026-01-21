@@ -1,5 +1,6 @@
 package com.example.watch.service.impl;
 
+import com.example.watch.assembler.ProductModelAssembler;
 import com.example.watch.dto.request.ProductRequestDTO;
 import com.example.watch.dto.response.ProductResponseDTO;
 import com.example.watch.entity.Brand;
@@ -25,6 +26,8 @@ public class ProductServiceImpl implements ProductService {
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
 
+    private final ProductModelAssembler assembler;
+
     // ================= CREATE =================
     @Override
     public ProductResponseDTO create(ProductRequestDTO dto) {
@@ -38,7 +41,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = ProductMapper.toEntity(dto, brand, category);
         product = productRepository.save(product);
 
-        return ProductMapper.toDTO(product);
+        return assembler.toModel(ProductMapper.toDTO(product));
     }
 
     // ================= READ ALL =================
@@ -49,6 +52,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findAllWithRelations()
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -60,6 +64,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByCategoryId(categoryId)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -70,6 +75,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findByBrandId(brandId)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -81,6 +87,7 @@ public class ProductServiceImpl implements ProductService {
                 .findByCategoryIdAndBrandId(categoryId, brandId)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -93,6 +100,7 @@ public class ProductServiceImpl implements ProductService {
                 .findByNameContainingIgnoreCase(keyword)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -104,6 +112,7 @@ public class ProductServiceImpl implements ProductService {
                 .findByCategoryIdAndNameContainingIgnoreCase(categoryId, keyword)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -115,6 +124,7 @@ public class ProductServiceImpl implements ProductService {
                 .findByBrandIdAndNameContainingIgnoreCase(brandId, keyword)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -131,6 +141,7 @@ public class ProductServiceImpl implements ProductService {
                         categoryId, brandId, keyword)
                 .stream()
                 .map(ProductMapper::toDTO)
+                .map(assembler::toModel)
                 .toList();
     }
 
@@ -142,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findDetailById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        return ProductMapper.toDTO(product);
+        return assembler.toModel(ProductMapper.toDTO(product));
     }
 
     // ================= UPDATE =================
@@ -161,7 +172,7 @@ public class ProductServiceImpl implements ProductService {
         ProductMapper.updateEntity(product, dto, brand, category);
 
         product = productRepository.save(product);
-        return ProductMapper.toDTO(product);
+        return assembler.toModel(ProductMapper.toDTO(product));
     }
 
     // ================= DELETE =================

@@ -4,11 +4,11 @@ import com.example.watch.dto.request.OrderRequestDTO;
 import com.example.watch.dto.response.OrderDetailResponseDTO;
 import com.example.watch.dto.response.OrderResponseDTO;
 import com.example.watch.entity.Order;
-import com.example.watch.entity.OrderDetail;
 import com.example.watch.entity.User;
 import com.example.watch.enums.OrderStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,10 +21,13 @@ public class OrderMapper {
 
         Order order = new Order();
         order.setUser(user);
-        order.setOrderCode(UUID.randomUUID().toString());
+        order.setOrderCode("ORD-" + UUID.randomUUID());
         order.setStatus(OrderStatus.PENDING);
         order.setShippingAddress(dto.getShippingAddress());
         order.setNote(dto.getNote());
+
+        order.setCreatedAt(LocalDateTime.now());
+        order.setTotalAmount(BigDecimal.ZERO); // tạm, sẽ update sau
 
         return order;
     }
@@ -32,18 +35,12 @@ public class OrderMapper {
     /**
      * Entity → DTO
      */
-    public static OrderResponseDTO toDTO(
-            Order order,
-            List<OrderDetail> orderDetails
-    ) {
+    public static OrderResponseDTO toDTO(Order order) {
 
-        List<OrderDetailResponseDTO> detailDTOs = orderDetails.stream()
-                .map(OrderDetailMapper::toDTO)
-                .toList();
-
-        BigDecimal totalAmount = detailDTOs.stream()
-                .map(OrderDetailResponseDTO::getTotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<OrderDetailResponseDTO> detailDTOs =
+                order.getOrderDetails().stream()
+                        .map(OrderDetailMapper::toDTO)
+                        .toList();
 
         return new OrderResponseDTO(
                 order.getId(),
@@ -53,7 +50,7 @@ public class OrderMapper {
                 order.getShippingAddress(),
                 order.getNote(),
 
-                totalAmount,
+                order.getTotalAmount(), // LẤY TỪ ENTITY
                 detailDTOs,
 
                 order.getCreatedAt()

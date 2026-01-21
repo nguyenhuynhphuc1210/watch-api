@@ -6,9 +6,11 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.hateoas.RepresentationModel;
+
 @Getter @Setter
 @AllArgsConstructor @NoArgsConstructor
-public class ProductResponseDTO  {
+public class ProductResponseDTO extends RepresentationModel<ProductResponseDTO> {
 
     private Long id;
     private String name;

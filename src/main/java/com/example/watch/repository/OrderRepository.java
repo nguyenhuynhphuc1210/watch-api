@@ -17,19 +17,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByStatus(OrderStatus status);
 
-    // ================= SECURITY / BUSINESS =================
+    // ================= SECURITY =================
 
-    // Lấy order theo code + user (tránh user xem order người khác)
     Optional<Order> findByOrderCodeAndUser_Id(String orderCode, Long userId);
 
-    // Kiểm tra order thuộc user hay không
     boolean existsByIdAndUser_Id(Long orderId, Long userId);
 
     // ================= SORTING =================
 
-    // Lịch sử mua hàng (mới nhất trước)
     List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // Admin xem order theo trạng thái (mới nhất trước)
     List<Order> findByStatusOrderByCreatedAtDesc(OrderStatus status);
 }

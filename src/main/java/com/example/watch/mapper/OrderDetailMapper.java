@@ -21,7 +21,7 @@ public class OrderDetailMapper {
 
         detail.setOrder(order);
         detail.setProduct(product);
-        detail.setPrice(product.getPrice());
+        detail.setPrice(product.getPrice()); // snapshot
         detail.setQuantity(quantity);
 
         BigDecimal total = product.getPrice()
