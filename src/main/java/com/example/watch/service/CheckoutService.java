@@ -30,12 +30,12 @@ public class CheckoutService {
     private final OrderDetailRepository detailRepo;
     private final PaymentRepository paymentRepo;
     private final ProductRepository productRepo;
+    private final VnPayService vnPayService;
 
     @Transactional
     public CheckoutResponseDTO checkout(
             CheckoutRequestDTO dto,
-            User user
-    ) {
+            User user) {
 
         if (dto.getItems() == null || dto.getItems().isEmpty()) {
             throw new RuntimeException("Cart is empty");
@@ -44,7 +44,7 @@ public class CheckoutService {
         // 1. Create Order
         Order order = new Order();
         order.setUser(user);
-        order.setOrderCode("ORD-" + java.util.UUID.randomUUID());
+        order.setOrderCode("ORD" + System.currentTimeMillis());
         order.setShippingAddress(dto.getShippingAddress());
         order.setNote(dto.getNote());
         order.setCreatedAt(LocalDateTime.now());
@@ -60,11 +60,9 @@ public class CheckoutService {
         for (CheckoutItemDTO i : dto.getItems()) {
 
             Product p = productRepo.findById(i.getProductId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            BigDecimal itemTotal =
-                    p.getPrice().multiply(BigDecimal.valueOf(i.getQuantity()));
+            BigDecimal itemTotal = p.getPrice().multiply(BigDecimal.valueOf(i.getQuantity()));
 
             OrderDetail od = new OrderDetail();
             od.setOrder(order);
@@ -87,25 +85,23 @@ public class CheckoutService {
         payment.setOrder(order);
         payment.setPaymentMethod(dto.getPaymentMethod());
         payment.setAmount(total);
-
-        if (dto.getPaymentMethod() == PaymentMethod.COD) {
-            payment.setPaymentStatus(PaymentStatus.PENDING);
-        } else {
-            payment.setPaymentStatus(PaymentStatus.SUCCESS);
-            payment.setPaidAt(LocalDateTime.now());
-            order.setStatus(OrderStatus.PAID);
-        }
+        payment.setPaymentStatus(PaymentStatus.PENDING);
 
         paymentRepo.save(payment);
+
+        String paymentUrl = null;
+
+        if (dto.getPaymentMethod() == PaymentMethod.VNPAY) {
+            paymentUrl = vnPayService.createPaymentUrl(order, total);
+        }
+
         orderRepo.save(order);
 
         return new CheckoutResponseDTO(
                 order.getId(),
                 order.getOrderCode(),
-                payment.getPaymentStatus()
-        );
+                payment.getPaymentStatus(),
+                paymentUrl);
+
     }
 }
-
-
-

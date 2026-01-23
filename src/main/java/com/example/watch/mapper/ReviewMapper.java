@@ -6,10 +6,15 @@ import com.example.watch.entity.Product;
 import com.example.watch.entity.Review;
 import com.example.watch.entity.User;
 
+import java.time.format.DateTimeFormatter;
+
 public class ReviewMapper {
 
-    public static Review toEntity(ReviewRequestDTO dto, User user, Product product) {
-
+    public static Review toEntity(
+            ReviewRequestDTO dto,
+            User user,
+            Product product
+    ) {
         Review review = new Review();
         review.setUser(user);
         review.setProduct(product);
@@ -19,12 +24,19 @@ public class ReviewMapper {
     }
 
     public static ReviewResponseDTO toDTO(Review review) {
+
+        String createdAt = review.getCreatedAt() != null
+                ? review.getCreatedAt()
+                        .format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+                : null;
+
         return new ReviewResponseDTO(
                 review.getId(),
-                review.getUser().getId(),
-                review.getUser().getFullName(),
+                review.getProduct().getId(),     // ✅ productId
+                review.getUser().getFullName(),  // ✅ userName
                 review.getRating(),
-                review.getComment()
+                review.getComment(),
+                createdAt                        // ✅ createdAt
         );
     }
 }

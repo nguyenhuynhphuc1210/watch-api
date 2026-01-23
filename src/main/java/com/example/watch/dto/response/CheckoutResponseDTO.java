@@ -12,5 +12,6 @@ public class CheckoutResponseDTO {
     private Long orderId;
     private String orderCode;
     private PaymentStatus paymentStatus;
+    private String paymentUrl;
 }
 

@@ -2,15 +2,16 @@ package com.example.watch.dto.response;
 
 import lombok.*;
 
-@Getter @Setter
-@AllArgsConstructor @NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ReviewResponseDTO {
 
     private Long id;
-
-    private Long userId;
+    private Long productId;
     private String userName;
-
-    private Integer rating;
+    private int rating;
     private String comment;
+    private String createdAt;
 }
